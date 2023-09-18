@@ -7,16 +7,16 @@ from ts_forecasting_env import ts_forecasting_env
 
 env = ts_forecasting_env(render_mode='human')
 agent = Agent(alpha=0.001, beta=0.003, input_dims=[10], tau=0.1, env=env,
-              batch_size=128, layer1_size=64, layer2_size=300, n_actions=1)
+              batch_size=128, layer1_size=64, layer2_size=64, n_actions=1, max_size=100000)
 
 #agent.load_models()
 np.random.seed(0)
 
 episodes = 300
 score_history = []
-for i in range(episodes):
+for i in range(1, episodes + 1):
     obs = env.reset()
-    # done = False
+    done = False
     score = 0
 
     # Render
@@ -31,6 +31,10 @@ for i in range(episodes):
         agent.learn()
         score += reward
         obs = new_state
+        if done:
+            break
+    print('episode ', i, 'score', score)
+    #   'trailing 100 episo avg %.3f' % np.mean(score_history[-100:]))
     score_history.append(score)
 
     # save last plot
@@ -41,8 +45,7 @@ for i in range(episodes):
     #if i % 25 == 0:
     #    agent.save_models()
 
-    print('episode ', i, 'score %.2f' % score),
-        #   'trailing 100 episo avg %.3f' % np.mean(score_history[-100:]))
+
 
 filename = 'results.png'
 plotLearning(score_history, filename, window=100)

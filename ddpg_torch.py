@@ -72,15 +72,15 @@ class CriticNetwork(nn.Module):
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
-        T.nn.init.uniform_(self.fc1.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.fc1.bias.data, 0.1, 0.1)
+        T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
+        T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
         self.bn1 = nn.LayerNorm(self.fc1_dims)
 
         self.action_value = nn.Linear(self.n_actions, self.fc1_dims)
         f3 = 0.003
         self.q = nn.Linear(self.fc1_dims, 1)
-        T.nn.init.uniform_(self.q.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.q.bias.data, 0.1, 0.1)
+        T.nn.init.uniform_(self.q.weight.data, -f3, f3)
+        T.nn.init.uniform_(self.q.bias.data, -f3, f3)
         self.bnq = nn.LayerNorm(1)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
@@ -91,9 +91,7 @@ class CriticNetwork(nn.Module):
     def forward(self, state, action):
         state_value = self.fc1(state)
         # state_value = self.bn1(state_value)
-        # state_value = F.relu(state_value)
 
-        # action_value = F.relu(self.action_value(action))
         action_value = self.action_value(action)
         state_action_value = F.relu(T.add(state_value, action_value))
         state_action_value = self.q(state_action_value)
@@ -121,14 +119,14 @@ class ActorNetwork(nn.Module):
 
         self.fc2 = nn.Linear(*self.input_dims, self.fc2_dims)
         f1 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        T.nn.init.uniform_(self.fc2.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.fc2.bias.data, 0.1, 0.1)
+        T.nn.init.uniform_(self.fc2.weight.data, -f1, f1)
+        T.nn.init.uniform_(self.fc2.bias.data, -f1, f1)
         self.bn1 = nn.LayerNorm(self.fc2_dims)
 
         f3 = 0.003
         self.mu = nn.Linear(self.fc2_dims, self.n_actions)
-        T.nn.init.uniform_(self.mu.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.mu.bias.data, 0.1, 0.1)
+        T.nn.init.uniform_(self.mu.weight.data, -f3, f3)
+        T.nn.init.uniform_(self.mu.bias.data, -f3, f3)
         self.bnmu = nn.LayerNorm(self.n_actions)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
@@ -157,8 +155,8 @@ class ActorNetwork(nn.Module):
 
 class Agent(object):
     def __init__(self, alpha, beta, input_dims, tau, env, gamma=0.90,
-                 n_actions=2, max_size=1000, layer1_size=400,
-                 layer2_size=300, batch_size=64):
+                 n_actions=1, max_size=100000, layer1_size=64,
+                 layer2_size=64, batch_size=128):
         self.gamma = gamma
         self.tau = tau
         self.memory = ReplayBuffer(max_size, input_dims, n_actions)

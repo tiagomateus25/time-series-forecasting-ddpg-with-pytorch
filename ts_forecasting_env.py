@@ -63,6 +63,7 @@ class ts_forecasting_env(Env):
 
         # Random initial state
         self.index = np.random.choice(range(self.historical_dp,len(data)))
+        self.index = 14914
         self.state = np.array(data[self.index - self.historical_dp:self.index], dtype=np.float32)
 
         return np.array(self.state, dtype=np.float32)
@@ -117,11 +118,11 @@ class ts_forecasting_env(Env):
         file_path = "traj" + str(trajectory) + "_results.txt"
         np.savetxt(file_path , file)
 
-# # Test the env
+# # # Test the env
 # env = ts_forecasting_env(render_mode='human')
 # input_dims = env.observation_space.shape[0]
 # n_actions = env.action_space.shape[0]
-# episodes = 100
+# episodes = 300
 # start = time.perf_counter()
 # for episode in range(1, episodes+1):
 #     state = env.reset()
