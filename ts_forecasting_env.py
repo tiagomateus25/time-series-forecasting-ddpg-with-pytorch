@@ -54,8 +54,8 @@ class ts_forecasting_env(Env):
         # Reset the environment to an initial state
         self.iteration = 0
 
-        # self.index = np.random.choice(range(self.historical_dp,len(data) + 1))
-        # self.state = np.array(data[self.index-self.historical_dp:self.index], dtype=np.float32)
+        self.index = np.random.choice(range(self.historical_dp,len(data) + 1))
+        self.state = np.array(data[self.index-self.historical_dp:self.index], dtype=np.float32)
 
         self.state = np.array(data[0:self.historical_dp], dtype=np.float32)
         
