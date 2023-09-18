@@ -6,9 +6,14 @@ from gym import Env
 from gym.spaces import Box
 import numpy as np
 from typing import Optional
+import time 
+
+# Trajectory 
+global trajectory
+trajectory = 1
 
 # Open csv
-file = open('trainingData/traj1_trainingData.csv')
+file = open('trainingData/traj' + str(trajectory) + '_trainingData.csv')
 
 # Read csv
 csvreader = csv.reader(file)
@@ -24,6 +29,8 @@ data = np.array(rows, dtype=np.float32)
 max = np.ndarray.max(data)
 min = np.ndarray.min(data)
 data = (data - min) / (max - min) 
+
+# Concatenate data
 data = np.concatenate(data)
 
 class ts_forecasting_env(Env):
@@ -54,11 +61,10 @@ class ts_forecasting_env(Env):
         # Reset the environment to an initial state
         self.iteration = 0
 
-        self.index = np.random.choice(range(self.historical_dp,len(data) + 1))
-        self.state = np.array(data[self.index-self.historical_dp:self.index], dtype=np.float32)
+        # Random initial state
+        self.index = np.random.choice(range(self.historical_dp,len(data)))
+        self.state = np.array(data[self.index - self.historical_dp:self.index], dtype=np.float32)
 
-        self.state = np.array(data[0:self.historical_dp], dtype=np.float32)
-        
         return np.array(self.state, dtype=np.float32)
     
     def step(self, action):
@@ -77,12 +83,12 @@ class ts_forecasting_env(Env):
         self.iteration += 1
 
         # Check terminal state
-        if self.iteration == len(data) - (self.historical_dp - 1):
-            self.state = np.array(data[0:self.historical_dp], dtype=np.float32)
+        if self.iteration == len(data) - self.index:
+            self.state = None
             done = True
 
         else:
-            self.state = np.array(data[0 + self.iteration:self.historical_dp + self.iteration], dtype=np.float32)
+            self.state = np.array(data[self.index - self.historical_dp + self.iteration:self.index + self.iteration], dtype=np.float32)
             done = False
 
         # Define additional information (optional)
@@ -108,35 +114,41 @@ class ts_forecasting_env(Env):
     def close(self):
         # Save last episode's chosen actions by the agent
         file = np.column_stack([self.actions])
-        file_path = "traj" + str(self.trajectory_idx) + "_results.txt"
+        file_path = "traj" + str(trajectory) + "_results.txt"
         np.savetxt(file_path , file)
 
-# Test the env
-env = ts_forecasting_env()
-input_dims = env.observation_space.shape[0]
-n_actions = env.action_space.shape[0]
-print(input_dims)
-print(n_actions)
-episodes = 1
-for episode in range(1, episodes+1):
-    state = env.reset()
-    terminated = False
-    score = 0
-    steps = 0
+# # Test the env
+# env = ts_forecasting_env(render_mode='human')
+# input_dims = env.observation_space.shape[0]
+# n_actions = env.action_space.shape[0]
+# episodes = 100
+# start = time.perf_counter()
+# for episode in range(1, episodes+1):
+#     state = env.reset()
+#     terminated = False
+#     score = 0
+#     steps = 0
 
-    if env.render_mode == 'human':
-        env.actions = np.array([])
+#     if env.render_mode == 'human':
+#         env.actions = np.array([])
 
-    while not terminated:
-        action = env.action_space.sample()
-        n_state, reward, terminated, info = env.step(action)
-        score += reward
-        steps += 1
-        print(n_state)
-    print('Episode:{} Score:{}'.format(episode, score))
-    print('Number of steps:', steps)
+#     for i in range(1000):
+#         action = env.action_space.sample()
+#         n_state, reward, terminated, info = env.step(action)
+#         score += reward
+#         steps += 1
+#         if terminated:
+#             break
 
-    # save last plot
-    if env.render_mode == 'human':
-        if episode == episodes:
-            env.close()
+#     print('Episode:{} Score:{}'.format(episode, score))
+#     print('Number of steps:', steps)
+
+#     # save last plot
+#     if env.render_mode == 'human':
+#         if episode == episodes:
+#             env.close()
+
+# end = time.perf_counter()
+
+# # Time
+# print(end - start)
