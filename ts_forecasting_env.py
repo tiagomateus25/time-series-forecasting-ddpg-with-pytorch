@@ -25,7 +25,7 @@ for row in csvreader:
 file.close()
 data = np.array(rows, dtype=np.float32)
 
-# Normalize data
+# # Normalize data
 max = np.ndarray.max(data)
 min = np.ndarray.min(data)
 data = (data - min) / (max - min) 
@@ -63,7 +63,6 @@ class ts_forecasting_env(Env):
 
         # Random initial state
         self.index = np.random.choice(range(self.historical_dp,len(data)))
-        self.index = 14914
         self.state = np.array(data[self.index - self.historical_dp:self.index], dtype=np.float32)
 
         return np.array(self.state, dtype=np.float32)
@@ -82,14 +81,11 @@ class ts_forecasting_env(Env):
 
         # Calculate the next state
         self.iteration += 1
-
-        # Check terminal state
-        if self.iteration == len(data) - self.index:
-            self.state = None
+        self.state = np.array(data[self.index - self.historical_dp + self.iteration:self.index + self.iteration], dtype=np.float32)
+        
+        if self.index + self.iteration == len(data):
             done = True
-
         else:
-            self.state = np.array(data[self.index - self.historical_dp + self.iteration:self.index + self.iteration], dtype=np.float32)
             done = False
 
         # Define additional information (optional)
@@ -118,7 +114,7 @@ class ts_forecasting_env(Env):
         file_path = "traj" + str(trajectory) + "_results.txt"
         np.savetxt(file_path , file)
 
-# # # Test the env
+# # Test the env
 # env = ts_forecasting_env(render_mode='human')
 # input_dims = env.observation_space.shape[0]
 # n_actions = env.action_space.shape[0]

@@ -263,7 +263,7 @@ n_actions = env.action_space.shape[0]
 agent = Agent(input_dims=input_dims, n_actions=n_actions, env=env, 
         lr_actor=2.5e-5, lr_critic=2.5e-4, tau=0.001, batch_size=64, fc1_dims=400, fc2_dims=300)
 
-num_episodes = 1
+num_episodes = 150
 np.random.seed(0)
 score_history = []
 
@@ -276,7 +276,7 @@ for i_episode in range(1, num_episodes+1):
     # Render
     if env.render_mode == 'human':
         env.actions = np.array([])
-    while not done:
+    for step in range(10):
         action = agent.choose_action(observation)
         observation_new, reward, done, _ = env.step(action)
         agent.remember(observation, action, reward, observation_new, done)
@@ -286,6 +286,8 @@ for i_episode in range(1, num_episodes+1):
         steps += 1
         print('Step', steps)
         observation = observation_new
+        if done:
+            break
     score_history.append(score)
 
     # save last plot
