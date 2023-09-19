@@ -66,21 +66,22 @@ class CriticNetwork(nn.Module):
         super(CriticNetwork, self).__init__()
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
-        # self.fc2_dims = fc2_dims
         self.n_actions = n_actions
         self.checkpoint_file = os.path.join(chkpt_dir,name+'_ddpg')
 
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
-        # f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
-        T.nn.init.uniform_(self.fc1.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.fc1.bias.data, 0.1, 0.1)
+        f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
+        f1 = 0.1
+        T.nn.init.uniform_(self.fc1.weight.data, 0, f1)
+        T.nn.init.uniform_(self.fc1.bias.data, f1, f1)
         # self.bn1 = nn.LayerNorm(self.fc1_dims)
 
         self.action_value = nn.Linear(self.n_actions, self.fc1_dims)
-        # f3 = 0.003
+        f3 = 0.003
+        f3 = 0.1
         self.q = nn.Linear(self.fc1_dims, 1)
-        T.nn.init.uniform_(self.q.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.q.bias.data, -0.1, 0.1)
+        T.nn.init.uniform_(self.q.weight.data, 0, f3)
+        T.nn.init.uniform_(self.q.bias.data, f3, f3)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
         self.device = T.device('cuda' if T.cuda.is_available() else 'cpu')
@@ -92,12 +93,12 @@ class CriticNetwork(nn.Module):
         # state_value = self.bn1(state_value)
         state_value = F.relu(state_value)
 
-        action_value = F.relu(self.action_value(action))
+        action_value = self.action_value(action)
+        action_value = F.relu(action_value)
 
-        # state_action_value = F.relu(T.add(state_value, action_value))
-        state_action_value = T.add(state_value, action_value)
+        state_action_value = F.relu(T.add(state_value, action_value))
         state_action_value = self.q(state_action_value)
-        # state_action_value = self.bnq(state_action_value)
+
 
         return state_action_value
 
@@ -120,16 +121,17 @@ class ActorNetwork(nn.Module):
         self.checkpoint_file = os.path.join(chkpt_dir,name+'_ddpg')
 
         self.fc2 = nn.Linear(*self.input_dims, self.fc2_dims)
-        # f1 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        T.nn.init.uniform_(self.fc2.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.fc2.bias.data, 0.1, 0.1)
-        # self.bn1 = nn.LayerNorm(self.fc2_dims)
+        f1 = 1./np.sqrt(self.fc2.weight.data.size()[0])
+        f1 = 0.1
+        T.nn.init.uniform_(self.fc2.weight.data, 0, f1)
+        T.nn.init.uniform_(self.fc2.bias.data, f1, f1)
+        # self.bn2 = nn.LayerNorm(self.fc2_dims)
 
-        # f3 = 0.003
+        f3 = 0.003
+        f3 = 0.1
         self.mu = nn.Linear(self.fc2_dims, self.n_actions)
-        T.nn.init.uniform_(self.mu.weight.data, 0, 0.1)
-        T.nn.init.uniform_(self.mu.bias.data, 0.1, 0.1)
-        # self.bnmu = nn.LayerNorm(self.n_actions)
+        T.nn.init.uniform_(self.mu.weight.data, 0, f3)
+        T.nn.init.uniform_(self.mu.bias.data, f3, f3)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
         self.device = T.device('cuda' if T.cuda.is_available() else 'cpu')
@@ -138,12 +140,11 @@ class ActorNetwork(nn.Module):
 
     def forward(self, state):
         x = self.fc2(state)
-        # x = self.bn1(x)
+        # x = self.bn2(x)
         x = F.relu(x)
 
         x = self.mu(x)
-        # x = self.bnmu(x)
-        # x = F.sigmoid(x)
+        x = F.sigmoid(x)
 
         return x
 

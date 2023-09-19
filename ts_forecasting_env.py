@@ -8,38 +8,35 @@ import numpy as np
 from typing import Optional
 import time 
 
-# Trajectory 
-global trajectory
-trajectory = 1
-
-# Open csv
-file = open('trainingData/traj' + str(trajectory) + '_trainingData.csv')
-
-# Read csv
-csvreader = csv.reader(file)
-
-# Store csv data in numpy ndarray
-rows = []
-for row in csvreader:
-    rows.append(row)
-file.close()
-data = np.array(rows, dtype=np.float32)
-
-# # Normalize data
-max = np.ndarray.max(data)
-min = np.ndarray.min(data)
-data = (data - min) / (max - min) 
-
-# Concatenate data
-data = np.concatenate(data)
-
 class ts_forecasting_env(Env):
-    def __init__(self, render_mode: Optional[str] = None):
-        # Chosen trajectory
-        self.trajectory_idx = 1 
+    def __init__(self, historical_dp, trajectory, render_mode: Optional[str] = None):
+
+        # Trajectory 
+        self.trajectory = trajectory
+
+        # Open csv
+        file = open('trainingData/traj' + str(self.trajectory) + '_trainingData.csv')
+
+        # Read csv
+        csvreader = csv.reader(file)
+
+        # Store csv data in numpy ndarray
+        rows = []
+        for row in csvreader:
+            rows.append(row)
+        file.close()
+        self.data = np.array(rows, dtype=np.float32)
+
+        # # Normalize data
+        max = np.ndarray.max(self.data)
+        min = np.ndarray.min(self.data)
+        self.data = (self.data - min) / (max - min) 
+
+        # Concatenate data
+        self.data = np.concatenate(self.data)
 
         # Number of historical data points
-        self.historical_dp = 10
+        self.historical_dp = historical_dp
 
         # Low states
         low = np.zeros([self.historical_dp], dtype=np.float32)
@@ -62,8 +59,8 @@ class ts_forecasting_env(Env):
         self.iteration = 0
 
         # Random initial state
-        self.index = np.random.choice(range(self.historical_dp,len(data)))
-        self.state = np.array(data[self.index - self.historical_dp:self.index], dtype=np.float32)
+        self.index = np.random.choice(range(self.historical_dp,len(self.data)))
+        self.state = np.array(self.data[self.index - self.historical_dp:self.index], dtype=np.float32)
 
         return np.array(self.state, dtype=np.float32)
     
@@ -81,9 +78,9 @@ class ts_forecasting_env(Env):
 
         # Calculate the next state
         self.iteration += 1
-        self.state = np.array(data[self.index - self.historical_dp + self.iteration:self.index + self.iteration], dtype=np.float32)
+        self.state = np.array(self.data[self.index - self.historical_dp + self.iteration:self.index + self.iteration], dtype=np.float32)
         
-        if self.index + self.iteration == len(data):
+        if self.index + self.iteration == len(self.data):
             done = True
         else:
             done = False
@@ -111,14 +108,14 @@ class ts_forecasting_env(Env):
     def close(self):
         # Save last episode's chosen actions by the agent
         file = np.column_stack([self.actions])
-        file_path = "traj" + str(trajectory) + "_results.txt"
+        file_path = "traj" + str(self.trajectory) + "_results.txt"
         np.savetxt(file_path , file)
 
 # # Test the env
-# env = ts_forecasting_env(render_mode='human')
+# env = ts_forecasting_env(historical_dp=7, trajectory=1, render_mode='human')
 # input_dims = env.observation_space.shape[0]
 # n_actions = env.action_space.shape[0]
-# episodes = 300
+# episodes = 10
 # start = time.perf_counter()
 # for episode in range(1, episodes+1):
 #     state = env.reset()
@@ -148,4 +145,4 @@ class ts_forecasting_env(Env):
 # end = time.perf_counter()
 
 # # Time
-# print(end - start)
+# print('Elapsed time: ', end - start)
