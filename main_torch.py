@@ -14,13 +14,13 @@ trajectory = 1
 historical_dp = 7
 
 env = ts_forecasting_env(historical_dp, trajectory)
-agent = Agent(alpha=0.0001, beta=0.001, input_dims=[historical_dp], tau=0.1, env=env,
+agent = Agent(alpha=0.0003, beta=0.003, input_dims=[historical_dp], tau=0.1, env=env,
               batch_size=32, layer1_size=32, layer2_size=32, n_actions=1, max_size=100000)
 
 np.random.seed(0)
 
 episodes = 400
-max_steps = 100
+max_steps = 1000
 reward_history = []
 average_reward_history = []
 episode_list = []

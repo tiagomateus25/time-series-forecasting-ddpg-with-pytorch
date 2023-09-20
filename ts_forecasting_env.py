@@ -9,7 +9,7 @@ from typing import Optional
 import time 
 
 class ts_forecasting_env(Env):
-    def __init__(self, historical_dp, trajectory, render_mode: Optional[str] = None):
+    def __init__(self, historical_dp=10, trajectory=1, render_mode: Optional[str] = None):
 
         # Trajectory 
         self.trajectory = trajectory
