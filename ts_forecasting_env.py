@@ -9,23 +9,24 @@ from typing import Optional
 import time 
 
 class ts_forecasting_env(Env):
-    def __init__(self, historical_dp=10, data=None, render_mode: Optional[str] = None):
-
+    def __init__(self, historical_dp=10, trajectory=None, data=None, render_mode: Optional[str] = None):
         # Data
         self.data = data
 
+        # Trajectory
+        self.trajectory = trajectory
         # Number of historical data points
         self.historical_dp = historical_dp
 
         # Low states
-        low = np.zeros([self.historical_dp], dtype=np.float32)
+        low = np.zeros([self.historical_dp], dtype=np.float64)
         
         # High states
-        high = np.ones([self.historical_dp], dtype=np.float32)
+        high = np.ones([self.historical_dp], dtype=np.float64)
 
         # Define the action and state spaces
-        self.action_space = Box(0, 1, shape=(1,), dtype=np.float32)
-        self.observation_space = Box(low, high, shape=(self.historical_dp,), dtype=np.float32)
+        self.action_space = Box(0, 1, shape=(1,), dtype=np.float64)
+        self.observation_space = Box(low, high, shape=(self.historical_dp,), dtype=np.float64)
 
         # Empty array to store chosen actions for the last episode
         self.actions = np.array([])
@@ -39,9 +40,9 @@ class ts_forecasting_env(Env):
 
         # Random initial state
         self.index = np.random.choice(range(self.historical_dp,len(self.data)))
-        self.state = np.array(self.data[self.index - self.historical_dp:self.index], dtype=np.float32)
+        self.state = np.array(self.data[self.index - self.historical_dp:self.index], dtype=np.float64)
 
-        return np.array(self.state, dtype=np.float32)
+        return np.array(self.state, dtype=np.float64)
     
     def step(self, action):
         # Get the current state
@@ -57,7 +58,7 @@ class ts_forecasting_env(Env):
 
         # Calculate the next state
         self.iteration += 1
-        self.state = np.array(self.data[self.index - self.historical_dp + self.iteration:self.index + self.iteration], dtype=np.float32)
+        self.state = np.array(self.data[self.index - self.historical_dp + self.iteration:self.index + self.iteration], dtype=np.float64)
         
         if self.index + self.iteration == len(self.data):
             done = True
@@ -67,7 +68,7 @@ class ts_forecasting_env(Env):
         # Define additional information (optional)
         info = {}
 
-        return np.array(self.state, dtype=np.float32), reward, done, info
+        return np.array(self.state, dtype=np.float64), reward, done, info
     
     def render(self):
         # Error warning
@@ -90,6 +91,7 @@ class ts_forecasting_env(Env):
         file_path = "traj" + str(self.trajectory) + "_results.txt"
         np.savetxt(file_path , file)
 
+
 # # Test the env
 # # Define variables
 # TRAJECTORY = 1
@@ -107,7 +109,7 @@ class ts_forecasting_env(Env):
 # for row in csvreader:
 #     rows.append(row)
 # file.close()
-# data_ = np.array(rows, dtype=np.float32)
+# data_ = np.array(rows, dtype=np.float64)
 
 # # Data split
 # split_index = round(len(data_) * SPLIT_RATE)
