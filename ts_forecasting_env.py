@@ -25,7 +25,7 @@ class ts_forecasting_env(Env):
         high = np.ones([self.historical_dp], dtype=np.float64)
 
         # Define the action and state spaces
-        self.action_space = Box(0, 1, shape=(1,), dtype=np.float64)
+        self.action_space = Box(0.0, 1.0, shape=(1,), dtype=np.float64)
         self.observation_space = Box(low, high, shape=(self.historical_dp,), dtype=np.float64)
 
         # Empty array to store chosen actions for the last episode

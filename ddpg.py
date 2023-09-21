@@ -73,36 +73,22 @@ class CriticNetwork(nn.Module):
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
         T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
-        # self.bn1 = nn.LayerNorm(self.critic_dims)
-
-        # self.fc2 = nn.Linear(self.critic_dims, 32)
-        # f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        # T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
-        # T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
-
 
         self.action_value = nn.Linear(self.n_actions, self.critic_dims)
+        
         f3 = 0.003
-        # self.q = nn.Linear(32, 1)
         self.q = nn.Linear(self.critic_dims, 1)
         T.nn.init.uniform_(self.q.weight.data, -f3, f3)
         T.nn.init.uniform_(self.q.bias.data, -f3, f3)
 
         self.optimizer = optim.Adam(self.parameters(), lr=beta)
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.device = T.device('cuda' if T.cuda.is_available() else 'cpu')
 
         self.to(self.device)
 
     def forward(self, state, action):
         state_value = self.fc1(state)
-        # state_value = self.bn1(state_value)
-        # state_value = F.relu(state_value)
-        # state_value = F.relu(state_value)
-        # state_value = self.fc2(state_value)
-
         action_value = self.action_value(action)
-        # action_value = F.relu(action_value)
-
         state_action_value = F.relu(T.add(state_value, action_value))
         state_action_value = self.q(state_action_value)
 
@@ -129,30 +115,19 @@ class ActorNetwork(nn.Module):
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
         T.nn.init.uniform_(self.fc1.bias.data, -f1, f1)
-        # self.bn1 = nn.LayerNorm(self.actor_dims)
-
-        # self.fc2 = nn.Linear(self.actor_dims, 32)
-        # f2 = 1./np.sqrt(self.fc2.weight.data.size()[0])
-        # T.nn.init.uniform_(self.fc2.weight.data, -f2, f2)
-        # T.nn.init.uniform_(self.fc2.bias.data, -f2, f2)
 
         f3 = 0.003
-        # self.mu = nn.Linear(32, self.n_actions)
         self.mu = nn.Linear(self.actor_dims, self.n_actions)
         T.nn.init.uniform_(self.mu.weight.data, -f3, f3)
         T.nn.init.uniform_(self.mu.bias.data, -f3, f3)
 
         self.optimizer = optim.Adam(self.parameters(), lr=alpha)
-        self.device = T.device('cuda:0' if T.cuda.is_available() else 'cpu')
+        self.device = T.device('cuda' if T.cuda.is_available() else 'cpu')
 
         self.to(self.device)
 
     def forward(self, state):
         x = self.fc1(state)
-        # x = self.bn1(x)
-        # x = F.relu(x)
-
-        # x = self.fc2(x)
         x = F.relu(x)
         x = self.mu(x)
         x = F.sigmoid(x)

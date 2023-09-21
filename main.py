@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from ddpg_torch import Agent
+from ddpg import Agent
 import numpy as np
 from ts_forecasting_env import ts_forecasting_env
 import time 
@@ -8,11 +8,11 @@ import csv
 import pandas as pd
 
 # Load and prepare data
-############################## Define variables ##############################
-TRAJECTORY = 1     # selected data
-HISTORICAL_DP = 10 # historical data points
+############################## Define variables #########################################
+TRAJECTORY = 1     
+HISTORICAL_DP = 25 # historical data points
 SPLIT_RATE = 0.80  # split data into train and test data
-##############################################################################
+#########################################################################################
 
 # Open csv
 file = open('allData/traj' + str(TRAJECTORY) + '_allData.csv')
@@ -28,6 +28,9 @@ file.close()
 data_ = np.array(rows, dtype=np.float64)
 data_ = np.concatenate(data_)
 
+# Considering relevant data only 
+data_ = data_[5000:14500]
+
 # Data split
 split_index = round(len(data_) * SPLIT_RATE)
 train_data, test_data = data_[:split_index], data_[split_index:]
@@ -39,16 +42,16 @@ TRAIN_DATA = (train_data - min) / (max - min)
 TEST_DATA = (test_data - min) / (max - min)
 
 # Training setup
-############################## Define hyper parameters ##############################
-LR_ACTOR = 0.001            # Actor learning rate 
-LR_CRITIC = 0.003           # Critic learning rate
-TAU = 0.1
-GAMMA = 0.9
+############################## Define hyper parameters ##################################
+LR_ACTOR = 0.0005            
+LR_CRITIC = 0.005           
+TAU = 0.1                    
+GAMMA = 0.9                  
 BATCH_SIZE = 128
-ACTOR_LAYER = 32
-CRITIC_LAYER = 32
+ACTOR_LAYER = 64
+CRITIC_LAYER = 64
 REPLAY_BUFFER_SIZE = 100000
-#####################################################################################
+#########################################################################################
 
 env = ts_forecasting_env(historical_dp=HISTORICAL_DP, data=TRAIN_DATA)
 
@@ -58,10 +61,10 @@ agent = Agent(alpha=LR_ACTOR, beta=LR_CRITIC, input_dims=[HISTORICAL_DP], tau=TA
 
 np.random.seed(0)
 
-############################## Define training parameters ##############################
-EPISODES = 100
-MAX_STEPS = 1000
-########################################################################################
+############################## Define training parameters ###############################
+EPISODES = 200
+MAX_STEPS = 100
+#########################################################################################
 
 reward_history = []
 average_reward_history = []
@@ -86,7 +89,7 @@ for i in range(1, EPISODES + 1):
         if done:
             break
 
-    print('episode:', i, 'reward %.2f' % reward, 'steps: ', step)
+    print('episode:', i, 'reward %.6f' % reward, 'steps: ', step)
     reward_history.append(reward)
     average_reward_history.append(np.mean(reward_history[-10:]))
     episode_list.append(i)
@@ -118,18 +121,21 @@ for i in range(len(TEST_DATA)):
         break
 
 pred = pd.Series(pred)
-pred = pred*(max-min)+min
+pred = pred * (max - min) + min
 actual = pd.Series(test_data[HISTORICAL_DP:])
 
 plt.figure(2)
-plt.scatter(pred[:750],actual[:750],marker = '.')
-plt.plot(np.linspace(-0.001,0.002), np.linspace(-0.001,0.002), color='red')
+plt.scatter(pred,actual,marker = '.')
+plt.plot([0,1], [0,1], 'black', linewidth=1)
+plt.plot([0,1], [0,1.2], 'r--', linewidth=1)
+plt.plot([0,1], [0,0.8], 'r--', linewidth=1)
 plt.xlabel('Predicted Value')
 plt.ylabel('Actual value')
 
 plt.figure(3)
-plt.plot(actual[:750], color='blue', label='real data')
-plt.plot(pred[:750], color='orange', label='predicted data')
+plt.plot(actual, color='blue', label='real data')
+plt.plot(pred, color='orange', label='predicted data')
+plt.legend()
 plt.xlabel('Time')
 plt.ylabel('Power (W)')
 plt.show()
