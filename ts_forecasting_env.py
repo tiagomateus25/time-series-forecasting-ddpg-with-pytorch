@@ -9,31 +9,10 @@ from typing import Optional
 import time 
 
 class ts_forecasting_env(Env):
-    def __init__(self, historical_dp=10, trajectory=1, render_mode: Optional[str] = None):
+    def __init__(self, historical_dp=10, data=None, render_mode: Optional[str] = None):
 
-        # Trajectory 
-        self.trajectory = trajectory
-
-        # Open csv
-        file = open('trainingData/traj' + str(self.trajectory) + '_trainingData.csv')
-
-        # Read csv
-        csvreader = csv.reader(file)
-
-        # Store csv data in numpy ndarray
-        rows = []
-        for row in csvreader:
-            rows.append(row)
-        file.close()
-        self.data = np.array(rows, dtype=np.float32)
-
-        # # Normalize data
-        max = np.ndarray.max(self.data)
-        min = np.ndarray.min(self.data)
-        self.data = (self.data - min) / (max - min) 
-
-        # Concatenate data
-        self.data = np.concatenate(self.data)
+        # Data
+        self.data = data
 
         # Number of historical data points
         self.historical_dp = historical_dp
@@ -112,7 +91,39 @@ class ts_forecasting_env(Env):
         np.savetxt(file_path , file)
 
 # # Test the env
-# env = ts_forecasting_env(historical_dp=7, trajectory=1, render_mode='human')
+# # Define variables
+# TRAJECTORY = 1
+# HISTORICAL_DP = 25
+# SPLIT_RATE = 0.80
+
+# # Open csv
+# file = open('allData/traj' + str(TRAJECTORY) + '_allData.csv')
+
+# # Read csv
+# csvreader = csv.reader(file)
+
+# # Store csv data in numpy ndarray
+# rows = []
+# for row in csvreader:
+#     rows.append(row)
+# file.close()
+# data_ = np.array(rows, dtype=np.float32)
+
+# # Data split
+# split_index = round(len(data_) * SPLIT_RATE)
+# train_data, test_data = data_[:split_index], data_[split_index:]
+
+# # Normalize data
+# max = np.ndarray.max(data_)
+# min = np.ndarray.min(data_)
+# train_data_norm = (train_data - min) / (max - min)  
+# test_data_norm = (test_data - min) / (max - min)
+
+# # Concatenate data
+# TRAIN_DATA = np.concatenate(train_data_norm)
+# TEST_DATA = np.concatenate(test_data_norm)
+
+# env = ts_forecasting_env(historical_dp=HISTORICAL_DP, data=TRAIN_DATA)
 # input_dims = env.observation_space.shape[0]
 # n_actions = env.action_space.shape[0]
 # episodes = 10
