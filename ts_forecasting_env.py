@@ -15,6 +15,7 @@ class ts_forecasting_env(Env):
 
         # Trajectory
         self.trajectory = trajectory
+        
         # Number of historical data points
         self.historical_dp = historical_dp
 
