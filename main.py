@@ -6,11 +6,12 @@ import time
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 
 # Load and prepare data
 ############################## Define variables #########################################
 TRAJECTORY = 1     
-HISTORICAL_DP = 25 # historical data points
+HISTORICAL_DP = 25 # historical data points (length of state)
 SPLIT_RATE = 0.80  # split data into train and test data
 #########################################################################################
 
@@ -28,8 +29,19 @@ file.close()
 data_ = np.array(rows, dtype=np.float64)
 data_ = np.concatenate(data_)
 
-# Considering relevant data only 
-data_ = data_[5000:14500]
+# Considering relevant data only
+if TRAJECTORY == 1:
+    data_ = data_[5000:14500]
+elif TRAJECTORY == 2:
+    data_ = data_[3900:7100]
+elif TRAJECTORY == 3:
+    data_ = data_[3000:7500]
+elif TRAJECTORY == 4:
+    data_ = data_[3250:7425]
+elif TRAJECTORY == 5:
+    data_ = data_[3750:7650]
+elif TRAJECTORY == 6:
+    data_ = data_[2400:]
 
 # Data split
 split_index = round(len(data_) * SPLIT_RATE)
@@ -43,8 +55,8 @@ TEST_DATA = (test_data - min) / (max - min)
 
 # Training setup
 ############################## Define hyper parameters ##################################
-LR_ACTOR = 0.0005            
-LR_CRITIC = 0.005           
+LR_ACTOR = 0.001           
+LR_CRITIC = 0.003          
 TAU = 0.1                    
 GAMMA = 0.9                  
 BATCH_SIZE = 128
@@ -104,7 +116,7 @@ end = time.perf_counter()
 # Time
 print('Elapsed time: ', end - start, ' seconds.')
 
-# Plot training
+# Plot training results
 plt.figure(1)
 plt.plot(episode_list, average_reward_history, color='blue', label='Average Reward')
 plt.plot(episode_list,reward_history, color='orange', label='Reward')
@@ -120,10 +132,24 @@ for i in range(len(TEST_DATA)):
     if HISTORICAL_DP + i == len(TEST_DATA) - 1:
         break
 
+pred = np.concatenate(pred)
 pred = pd.Series(pred)
 pred = pred * (max - min) + min
 actual = pd.Series(test_data[HISTORICAL_DP:])
 
+# Mean absolute error
+print('MAE: ', mean_absolute_error(actual, pred))
+
+# Mean squared error
+print('MSE: ', mean_squared_error(actual, pred, squared=False))
+
+# Root mean squared error
+print('RMSE: ', mean_squared_error(actual, pred, squared=True))
+
+# Coefficient of determination
+print('R2: ', r2_score(actual, pred))
+
+# Plot error lines
 plt.figure(2)
 plt.scatter(pred,actual,marker = '.')
 plt.plot([0,1], [0,1], 'black', linewidth=1)
@@ -132,6 +158,7 @@ plt.plot([0,1], [0,0.8], 'r--', linewidth=1)
 plt.xlabel('Predicted Value')
 plt.ylabel('Actual value')
 
+# Plot results
 plt.figure(3)
 plt.plot(actual, color='blue', label='real data')
 plt.plot(pred, color='orange', label='predicted data')
