@@ -87,7 +87,7 @@ agent = Agent(alpha=LR_ACTOR, beta=LR_CRITIC, input_dims=[HISTORICAL_DP], tau=TA
             layer2_size=CRITIC_LAYER, max_size=REPLAY_BUFFER_SIZE)
 
 ############################## Define training parameters ###############################
-EPISODES = 1
+EPISODES = 100
 MAX_STEPS = 1000
 #########################################################################################
 
