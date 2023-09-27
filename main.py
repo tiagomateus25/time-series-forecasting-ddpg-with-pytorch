@@ -10,7 +10,7 @@ from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 
 # Load and prepare data
 ############################## Define variables #########################################
-TRAJECTORY = 1     
+TRAJECTORY = 1    
 HISTORICAL_DP = 25 # historical data points (length of state)
 SPLIT_RATE = 0.80  # split data into train and test data
 #########################################################################################
@@ -41,7 +41,7 @@ elif TRAJECTORY == 4:
 elif TRAJECTORY == 5:
     data_ = data_[3750:7650]
 elif TRAJECTORY == 6:
-    data_ = data_[2400:]
+    data_ = data_[2400:17500]
 
 # Data split
 split_index = round(len(data_) * SPLIT_RATE)
@@ -61,7 +61,7 @@ TAU = 0.1
 GAMMA = 0.9                  
 BATCH_SIZE = 128
 ACTOR_LAYER = 64
-CRITIC_LAYER = 64
+CRITIC_LAYER = 62
 REPLAY_BUFFER_SIZE = 100000
 #########################################################################################
 
@@ -71,11 +71,9 @@ agent = Agent(alpha=LR_ACTOR, beta=LR_CRITIC, input_dims=[HISTORICAL_DP], tau=TA
             gamma=GAMMA,batch_size=BATCH_SIZE, layer1_size=ACTOR_LAYER, n_actions=1,
             layer2_size=CRITIC_LAYER, max_size=REPLAY_BUFFER_SIZE)
 
-np.random.seed(0)
-
 ############################## Define training parameters ###############################
 EPISODES = 200
-MAX_STEPS = 100
+MAX_STEPS = 1000
 #########################################################################################
 
 reward_history = []
@@ -155,14 +153,12 @@ plt.scatter(pred,actual,marker = '.')
 plt.plot([0,1], [0,1], 'black', linewidth=1)
 plt.plot([0,1], [0,1.2], 'r--', linewidth=1)
 plt.plot([0,1], [0,0.8], 'r--', linewidth=1)
-plt.xlabel('Predicted Value')
-plt.ylabel('Actual value')
+plt.title('Trajectory ' + str(TRAJECTORY))
 
 # Plot results
 plt.figure(3)
 plt.plot(actual, color='blue', label='real data')
 plt.plot(pred, color='orange', label='predicted data')
 plt.legend()
-plt.xlabel('Time')
-plt.ylabel('Power (W)')
+plt.title('Trajectory ' + str(TRAJECTORY))
 plt.show()

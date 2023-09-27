@@ -50,7 +50,7 @@ class ts_forecasting_env(Env):
         self.current_state = self.state
 
         # Calculate the reward
-        reward = -np.abs(self.current_state[self.historical_dp - 1] - action)
+        reward = -abs(self.current_state[self.historical_dp - 1] - action)
 
         # Store chosen action
         self.chosen_action = action
@@ -94,6 +94,7 @@ class ts_forecasting_env(Env):
 
 
 # # Test the env
+
 # # Define variables
 # TRAJECTORY = 1
 # HISTORICAL_DP = 25
