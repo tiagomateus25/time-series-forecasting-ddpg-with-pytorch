@@ -3,7 +3,6 @@ from ddpg import Agent
 import numpy as np
 from ts_forecasting_env import ts_forecasting_env
 import time 
-import matplotlib
 import matplotlib.pyplot as plt
 import csv
 import pandas as pd
