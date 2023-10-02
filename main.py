@@ -81,12 +81,12 @@ REPLAY_BUFFER_SIZE = 100000
 env = ts_forecasting_env(historical_dp=HISTORICAL_DP, data=TRAIN_DATA)
 
 # Call agent
-agent = Agent(alpha=LR_ACTOR, beta=LR_CRITIC, input_dims=[HISTORICAL_DP], tau=TAU, 
+agent = Agent(alpha=LR_ACTOR, beta=LR_CRITIC, input_dims=[HISTORICAL_DP - 1], tau=TAU, 
             gamma=GAMMA,batch_size=BATCH_SIZE, layer1_size=ACTOR_LAYER, n_actions=1,
             layer2_size=CRITIC_LAYER, max_size=REPLAY_BUFFER_SIZE)
 
 ############################## Define training parameters ###############################
-EPISODES = 100
+EPISODES = 1
 MAX_STEPS = 1000
 #########################################################################################
 
@@ -130,16 +130,16 @@ plt.ylabel('Reward')
 # Test the agent
 pred = []
 for i in range(len(TEST_DATA)):
-    state = np.array(TEST_DATA[0 + i:HISTORICAL_DP + i], dtype=np.float64)
+    state = np.array(TEST_DATA[0 + i:HISTORICAL_DP - 1 + i], dtype=np.float64)
     action = agent.choose_action(state)
     pred.append(action)
-    if HISTORICAL_DP + i == len(TEST_DATA) - 1:
+    if HISTORICAL_DP - 1 + i == len(TEST_DATA) - 1:
         break
 
 pred = np.concatenate(pred)
 pred = pd.Series(pred)
 pred = pred * (max - min) + min
-real = pd.Series(test_data[HISTORICAL_DP:])
+real = pd.Series(test_data[HISTORICAL_DP - 1:])
 
 # Mean absolute error
 print('MAE: ', mean_absolute_error(real, pred))
