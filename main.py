@@ -17,7 +17,7 @@ args = parser.parse_args()
 # Load and prepare data
 ############################## Define variables #########################################
 TRAJECTORY = args.traj    
-HISTORICAL_DP = 25 # historical data points (length of state)
+HISTORICAL_DP = 24 # historical data points (length of state)
 SPLIT_RATE = 0.80  # split data into train and test data
 #########################################################################################
 
@@ -73,7 +73,7 @@ TAU = 0.1
 GAMMA = 0.9                  
 BATCH_SIZE = 128
 ACTOR_LAYER = 64
-CRITIC_LAYER = 62
+CRITIC_LAYER = 64
 REPLAY_BUFFER_SIZE = 100000
 #########################################################################################
 
@@ -81,14 +81,16 @@ REPLAY_BUFFER_SIZE = 100000
 env = ts_forecasting_env(historical_dp=HISTORICAL_DP, data=TRAIN_DATA)
 
 # Call agent
-agent = Agent(alpha=LR_ACTOR, beta=LR_CRITIC, input_dims=[HISTORICAL_DP - 1], tau=TAU, 
+agent = Agent(alpha=LR_ACTOR, beta=LR_CRITIC, input_dims=[HISTORICAL_DP], tau=TAU, 
             gamma=GAMMA,batch_size=BATCH_SIZE, layer1_size=ACTOR_LAYER, n_actions=1,
             layer2_size=CRITIC_LAYER, max_size=REPLAY_BUFFER_SIZE)
 
 ############################## Define training parameters ###############################
-EPISODES = 60
+EPISODES = 15
 MAX_STEPS = 1000
 #########################################################################################
+
+np.random.seed(0)
 
 # Train the agent 
 reward_history = []
@@ -130,10 +132,10 @@ plt.ylabel('Reward')
 # Test the agent
 pred = []
 for i in range(len(TEST_DATA)):
-    state = np.array(TEST_DATA[0 + i:HISTORICAL_DP - 1 + i], dtype=np.float64)
+    state = np.array(TEST_DATA[0 + i:HISTORICAL_DP + i], dtype=np.float64)
     action = agent.choose_action(state)
     pred.append(action)
-    if HISTORICAL_DP - 1 + i == len(TEST_DATA) - 1:
+    if HISTORICAL_DP + i == len(TEST_DATA):
         break
 
 pred = np.concatenate(pred)
