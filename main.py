@@ -18,15 +18,13 @@ data = DATA.iloc[:,0] # all data from the first column
 data = data.values.astype('float32')
 #########################################################################################
 
-# Normalize data
-max = np.max(data)
-min = np.min(data)
-
 # Data split
 split_index = round(len(data) * SPLIT_RATE)
 train_data, test_data = data[:split_index], data[split_index:]
 
 # Normalize data
+max = np.max(data)
+min = np.min(data)
 TRAIN_DATA = (train_data - min) / (max - min)  
 TEST_DATA = (test_data - min) / (max - min)
 
